@@ -7,7 +7,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 def display_signature():
-    img = Image.open('signature.jpg')
+    img = Image.open('signature.jpeg')
     plt.imshow(img)
     plt.axis('off') 
     plt.show()
