@@ -4,16 +4,75 @@ import time
 import sys
 
 from PIL import Image
-import matplotlib.pyplot as plt
 
-def display_signature():
-    img = Image.open('signature.jpeg')
-    plt.imshow(img)
-    plt.axis('off') 
-    plt.show()
+def create_signature_file():
+    if SIS_ID == None or SIS_ID == '012345678':
+        printError("Enter your SIS_ID in the resources/student_info.py file")
 
-# Calls the function to display my signature
-display_signature()
+    if STUDENT_NAME == None or STUDENT_NAME == 'firstname.lastname':
+        printError("Enter your first and last name in the resources/student_info.py file")
+
+    width = 725
+    height = 400
+
+    char_count = 0
+    word_count = 0
+    line_count = 0
+    frame = inspect.stack()[1]
+    assignment_full_path = frame[0].f_code.co_filename
+    if "prove" in assignment_full_path:
+        print("grading...")
+        return
+    
+    assignment_name = os.path.basename(assignment_full_path)
+    
+    with open(assignment_full_path, 'r') as f:
+        for line in f:
+            line_count += 1
+            words = line.split()
+            word_count += len(words)
+            char_count += sum(len(word) for word in words)
+
+    divide_index = 70
+    if len(assignment_full_path) > divide_index:
+        # find the nearest directory divider before the div_index characters
+        for c in range(51, 0, -1):
+            if assignment_full_path[c] == os.sep:
+                divide_index = c
+                break
+        assignment_full_path = assignment_full_path[:divide_index] + '\n' + ' ' * 9 + assignment_full_path[divide_index:]
+        
+    text = f"Filename={assignment_full_path} \
+            \nDATEIME={datetime.now()} \
+            \nUUID={uuid.uuid4()} \
+            \nNODE={uuid.getnode()} \
+            \nLOGIN={os.getlogin()} \
+            \nHOST={platform.node()} \
+            \nARCH={platform.architecture()} \
+            \nVERSION={platform.version()} \
+            \nCORES={platform.processor()} \
+            \nPROC={platform.machine()} \
+            \n\nCharacters in {assignment_name[:-3]}={char_count} \
+            \nWords in {assignment_name[:-3]}={word_count} \
+            \nLines in {assignment_name[:-3]}={line_count} \
+            \n\nSIS_ID={SIS_ID} \
+            \nName={STUDENT_NAME} \
+            \n\nOn my honor: \
+            \n1. I wrote this myself\
+            \n2. I have not copied any code from a current or previous student of CSE251 \
+            \n3. I have added a comment to every line of code that I added to this assignment"
+    filename = f'{SIS_ID}_{assignment_name[:-3]}_signature.jpeg'
+    # get the absolute path to the directory this file exists in
+    resource_path = os.path.realpath(os.path.join(
+        os.getcwd(), os.path.dirname(__file__)))
+    # append the font name
+    font_path =  os.path.join(resource_path, "COURBD.TTF")
+
+    img = Image.new('CMYK', (width, height))
+    draw1 = ImageDraw.Draw(img)
+    font1 = ImageFont.truetype(font_path, 14)
+    draw1.text((10, 15), text, (255, 255, 255), font=font1)
+    img.save(filename)
 
 
 # Global count of the number of primes found
@@ -153,17 +212,6 @@ def main():
     except ValueError as e:
         print(f"Input Error: {e}")  # Prints input validation errors
         sys.exit(1)  # Exits the program with an error code
-
-
-
-def display_signature():
-    img = Image.open('my_signature.jpg')  # Path to your signature image
-    plt.imshow(img)
-    plt.axis('off')  # Hide axes
-    plt.show()
-
-# Call the function to display your signature
-display_signature()
 
 
 if __name__ == '__main__':
